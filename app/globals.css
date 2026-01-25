@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark &));
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background:
+    radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(59,130,246,0.08), transparent 40%),
+    #ffffff;
+
+  color: #0f172a;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(59,130,246,0.08), transparent 40%),
+    #0f172a;
+
+  color: #ffffff;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s ease-out both;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
