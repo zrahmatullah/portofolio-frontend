@@ -46,8 +46,9 @@ export default function Hero() {
             leading-relaxed
           ">
             I build modern, scalable, and maintainable web applications
-            using <span className="text-slate-900 dark:text-white font-medium">Laravel</span> &{' '}
-            <span className="text-slate-900 dark:text-white font-medium">Next.js</span>.
+            using <span className="text-slate-900 dark:text-white font-medium">Laravel</span> ,
+            <span className="text-slate-900 dark:text-white font-medium">Next.js</span>. &{' '}
+            <span className="text-slate-900 dark:text-white font-medium">vue.js</span>.
           </p>
 
           <div className="mt-10 flex flex-wrap justify-center md:justify-start gap-4">
