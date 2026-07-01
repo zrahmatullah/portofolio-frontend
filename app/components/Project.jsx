@@ -53,7 +53,7 @@ export default function Projects() {
 
         {/* LOADING STATE */}
         {status === 'loading' && (
-          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
@@ -91,7 +91,7 @@ export default function Projects() {
 
         {/* GRID */}
         {status === 'success' && projects.length > 0 && (
-          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             {projects.map((p, i) => (
               <div
                 key={p.id ?? i}
@@ -107,7 +107,10 @@ export default function Projects() {
                   transition-all duration-300
                   animate-fade-up
                 "
-                style={{ animationDelay: `${i * 0.1}s` }}
+                style={{
+                  animationDelay: `${i * 0.1}s`,
+                  opacity: 1,
+                }}
               >
                 {/* GLOW ON HOVER */}
                 <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-cyan-400/0 group-hover:from-blue-500/5 group-hover:to-cyan-400/5 transition-all duration-300 pointer-events-none" />

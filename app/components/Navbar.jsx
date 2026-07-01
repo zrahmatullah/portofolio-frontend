@@ -46,9 +46,6 @@ export default function Navbar() {
         >
           Azhar <span className="text-blue-500">As</span>
           <span className="hidden sm:inline"> Rahmatulloh</span>
-          <span className="hidden sm:inline text-sm text-gray-500 dark:text-gray-400 ml-2">
-            S.Kom
-          </span>
         </h1>
 
         {/* RIGHT */}
