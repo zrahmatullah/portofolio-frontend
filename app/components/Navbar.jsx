@@ -2,167 +2,127 @@
 
 import { useEffect, useState } from 'react'
 
-const NAV_ITEMS = ['Home', 'About', 'Works', 'Contact']
+const NAV_ITEMS = [
+  { label: 'Home', href: '#home' },
+  { label: 'About', href: '#about' },
+  { label: 'Works', href: '#projects' },
+  { label: 'Contact', href: '#contact' },
+]
 
 export default function Navbar() {
   const [isDark, setIsDark] = useState(false)
   const [open, setOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
 
   useEffect(() => {
-    document.documentElement.classList.remove('dark')
+    const savedTheme = window.localStorage.getItem('theme')
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const nextTheme = savedTheme ? savedTheme === 'dark' : prefersDark
+
+    document.documentElement.classList.toggle('dark', nextTheme)
+    const timer = window.setTimeout(() => setIsDark(nextTheme), 0)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const sections = NAV_ITEMS.map(({ href }) => document.querySelector(href)).filter(Boolean)
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleSection = entries.find((entry) => entry.isIntersecting)
+        if (visibleSection) setActiveSection(visibleSection.target.id)
+      },
+      { rootMargin: '-35% 0px -55% 0px', threshold: 0 },
+    )
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const closeMenu = () => setOpen(false)
+    const handleKeyDown = (event) => event.key === 'Escape' && closeMenu()
+
+    window.addEventListener('resize', closeMenu)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('resize', closeMenu)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   const toggleTheme = () => {
-    const next = !isDark
-    setIsDark(next)
-    document.documentElement.classList.toggle('dark', next)
+    const nextTheme = !isDark
+    setIsDark(nextTheme)
+    document.documentElement.classList.toggle('dark', nextTheme)
+    window.localStorage.setItem('theme', nextTheme ? 'dark' : 'light')
+  }
+
+  const linkClassName = (item, mobile = false) => {
+    const isActive = activeSection === item.href.slice(1)
+    const shared = 'transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900'
+
+    if (mobile) {
+      return `${shared} flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium ${
+        isActive
+          ? 'bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300'
+          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white'
+      }`
+    }
+
+    return `${shared} relative py-2 text-sm font-medium ${
+      isActive
+        ? 'text-blue-600 dark:text-blue-400 after:w-full'
+        : 'text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white after:w-0'
+    } after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-blue-500 after:transition-all`
   }
 
   return (
-    <nav
-      className="
-        sticky top-0 z-50
-        backdrop-blur-md
-        bg-white/70 dark:bg-slate-900/70
-        border-b border-black/5 dark:border-white/5
-        transition-colors duration-300
-      "
-    >
-      <div
-        className="
-          max-w-6xl mx-auto
-          flex items-center justify-between
-          px-4 md:px-10 py-4
-        "
-      >
-        {/* LOGO */}
-        <h1
-          className="
-            font-semibold
-            text-sm sm:text-base md:text-lg
-            text-slate-900 dark:text-white
-            truncate
-          "
-        >
-          Azhar <span className="text-blue-500">As</span>
-          <span className="hidden sm:inline"> Rahmatulloh</span>
-        </h1>
+    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/75">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8" aria-label="Main navigation">
+        <a href="#home" className="group rounded-lg text-base font-bold tracking-tight text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-white">
+          Azhar <span className="text-blue-600 transition-colors group-hover:text-blue-500 dark:text-blue-400">As</span><span className="hidden sm:inline"> Rahmatulloh</span>
+        </a>
 
-        {/* RIGHT */}
-        <div className="flex items-center gap-2 md:gap-6">
-          {/* THEME TOGGLE */}
-          <button
-            onClick={toggleTheme}
-            className="
-              relative w-9 h-9
-              flex items-center justify-center
-              rounded-full
-              text-slate-700 dark:text-gray-300
-              hover:bg-black/5 dark:hover:bg-white/10
-              active:scale-90
-              transition-all duration-200
-            "
-            aria-label="Toggle theme"
-          >
-            <svg
-              className={`w-5 h-5 absolute transition-all duration-300 ${
-                isDark ? 'opacity-0 -rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100'
-              }`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <circle cx="12" cy="12" r="4" />
-              <path
-                strokeLinecap="round"
-                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
-              />
-            </svg>
-            <svg
-              className={`w-5 h-5 absolute transition-all duration-300 ${
-                isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 rotate-90 scale-50'
-              }`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-            </svg>
-          </button>
-
-          {/* DESKTOP MENU */}
-          <ul className="hidden md:flex gap-8 text-sm text-slate-700 dark:text-gray-300">
+        <div className="flex items-center gap-1 sm:gap-3">
+          <ul className="hidden items-center gap-1 md:flex">
             {NAV_ITEMS.map((item) => (
-              <li key={item}>
-                <a
-                  href={`#${item.toLowerCase()}`}
-                  className="
-                    relative transition
-                    hover:text-blue-600 dark:hover:text-white
-                    after:absolute after:left-0 after:-bottom-1
-                    after:h-[2px] after:w-0 after:bg-blue-500
-                    after:transition-all after:duration-300
-                    hover:after:w-full
-                  "
-                >
-                  {item}
+              <li key={item.href}>
+                <a href={item.href} className={linkClassName(item)} aria-current={activeSection === item.href.slice(1) ? 'page' : undefined}>
+                  {item.label}
                 </a>
               </li>
             ))}
           </ul>
 
-          {/* HAMBURGER -> X */}
-          <button
-            onClick={() => setOpen(!open)}
-            className="md:hidden relative w-9 h-9 flex items-center justify-center"
-            aria-label="Toggle menu"
-          >
-            <span
-              className={`absolute w-5 h-[2px] bg-slate-700 dark:bg-gray-300 transition-all duration-300 ${
-                open ? 'rotate-45' : '-translate-y-1.5'
-              }`}
-            />
-            <span
-              className={`absolute w-5 h-[2px] bg-slate-700 dark:bg-gray-300 transition-all duration-300 ${
-                open ? 'opacity-0' : 'opacity-100'
-              }`}
-            />
-            <span
-              className={`absolute w-5 h-[2px] bg-slate-700 dark:bg-gray-300 transition-all duration-300 ${
-                open ? '-rotate-45' : 'translate-y-1.5'
-              }`}
-            />
+          <button onClick={toggleTheme} className="grid size-10 place-items-center rounded-full text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white" aria-label={isDark ? 'Use light theme' : 'Use dark theme'} title={isDark ? 'Use light theme' : 'Use dark theme'}>
+            {isDark ? (
+              <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path strokeLinecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+            ) : (
+              <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" /></svg>
+            )}
+          </button>
+
+          <button onClick={() => setOpen((current) => !current)} className="grid size-10 place-items-center rounded-full text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-slate-200 dark:hover:bg-white/10 md:hidden" aria-label={open ? 'Close menu' : 'Open menu'} aria-controls="mobile-navigation" aria-expanded={open}>
+            <span className="relative block size-5" aria-hidden="true">
+              <span className={`absolute left-0 top-1/2 h-0.5 w-5 -translate-y-1.5 rounded-full bg-current transition ${open ? 'translate-y-0 rotate-45' : ''}`} />
+              <span className={`absolute left-0 top-1/2 h-0.5 w-5 rounded-full bg-current transition ${open ? 'opacity-0' : ''}`} />
+              <span className={`absolute left-0 top-1/2 h-0.5 w-5 translate-y-1.5 rounded-full bg-current transition ${open ? 'translate-y-0 -rotate-45' : ''}`} />
+            </span>
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* MOBILE MENU */}
-      <div
-        className={`
-          md:hidden overflow-hidden
-          bg-white dark:bg-slate-900
-          transition-all duration-300 ease-in-out
-          ${open ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}
-        `}
-      >
-        <div className="px-4 pb-4 flex flex-col gap-1 text-sm">
+      <div id="mobile-navigation" className={`overflow-hidden border-t border-slate-200/70 transition-all duration-300 dark:border-white/10 md:hidden ${open ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <ul className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
           {NAV_ITEMS.map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              onClick={() => setOpen(false)}
-              className="
-                py-2.5 px-2 rounded-lg
-                border-b border-black/5 dark:border-white/10
-                hover:bg-black/5 dark:hover:bg-white/5
-                transition-colors
-              "
-            >
-              {item}
-            </a>
+            <li key={item.href}>
+              <a href={item.href} onClick={() => setOpen(false)} className={linkClassName(item, true)} aria-current={activeSection === item.href.slice(1) ? 'page' : undefined}>
+                {item.label}<span aria-hidden="true">↗</span>
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
-    </nav>
+    </header>
   )
 }
