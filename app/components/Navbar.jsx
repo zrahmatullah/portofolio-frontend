@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV_ITEMS = [
   { label: 'Home', href: '#home' },
@@ -13,6 +14,16 @@ export default function Navbar() {
   const [isDark, setIsDark] = useState(false)
   const [open, setOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
+  const [scrolled, setScrolled] = useState(false)
+
+  // Track page scroll to toggle solid background overlay
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('theme')
@@ -59,10 +70,10 @@ export default function Navbar() {
 
   const linkClassName = (item, mobile = false) => {
     const isActive = activeSection === item.href.slice(1)
-    const shared = 'transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900'
+    const shared = 'transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900'
 
     if (mobile) {
-      return `${shared} flex items-center justify-between rounded-xl px-3 py-3 text-sm font-medium ${
+      return `${shared} flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium ${
         isActive
           ? 'bg-blue-50 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300'
           : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white'
@@ -71,27 +82,43 @@ export default function Navbar() {
 
     return `${shared} relative py-2 text-sm font-medium ${
       isActive
-        ? 'text-blue-600 dark:text-blue-400 after:w-full'
-        : 'text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white after:w-0'
-    } after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-blue-500 after:transition-all`
+        ? 'text-blue-600 dark:text-blue-400'
+        : 'text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white'
+    }`
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/75">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8" aria-label="Main navigation">
+    <header 
+      className={`sticky top-0 z-50 transition-all duration-300 border-b ${
+        scrolled 
+          ? 'border-slate-200/80 bg-white/80 dark:border-white/10 dark:bg-slate-950/80 backdrop-blur-md shadow-sm py-1' 
+          : 'border-transparent bg-transparent py-3'
+      }`}
+    >
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <a href="#home" className="group rounded-lg text-base font-bold tracking-tight text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-white">
           Azhar <span className="text-blue-600 transition-colors group-hover:text-blue-500 dark:text-blue-400">As</span><span className="hidden sm:inline"> Rahmatulloh</span>
         </a>
 
         <div className="flex items-center gap-1 sm:gap-3">
-          <ul className="hidden items-center gap-1 md:flex">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.href}>
-                <a href={item.href} className={linkClassName(item)} aria-current={activeSection === item.href.slice(1) ? 'page' : undefined}>
-                  {item.label}
-                </a>
-              </li>
-            ))}
+          <ul className="hidden items-center gap-6 md:flex">
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeSection === item.href.slice(1)
+              return (
+                <li key={item.href} className="relative">
+                  <a href={item.href} className={linkClassName(item)} aria-current={isActive ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                  {isActive && (
+                    <motion.div
+                      layoutId="navActiveLine"
+                      className="absolute inset-x-0 -bottom-1.5 h-0.5 rounded-full bg-blue-500"
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                </li>
+              )
+            })}
           </ul>
 
           <button onClick={toggleTheme} className="grid size-10 place-items-center rounded-full text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white" aria-label={isDark ? 'Use light theme' : 'Use dark theme'} title={isDark ? 'Use light theme' : 'Use dark theme'}>
@@ -112,17 +139,29 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <div id="mobile-navigation" className={`overflow-hidden border-t border-slate-200/70 transition-all duration-300 dark:border-white/10 md:hidden ${open ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <ul className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
-          {NAV_ITEMS.map((item) => (
-            <li key={item.href}>
-              <a href={item.href} onClick={() => setOpen(false)} className={linkClassName(item, true)} aria-current={activeSection === item.href.slice(1) ? 'page' : undefined}>
-                {item.label}<span aria-hidden="true">↗</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {/* MOBILE NAV DRAWER */}
+      <AnimatePresence>
+        {open && (
+          <motion.div 
+            id="mobile-navigation" 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden border-t border-slate-200/70 bg-white/95 dark:border-white/10 dark:bg-slate-950/95 md:hidden"
+          >
+            <ul className="mx-auto flex max-w-6xl flex-col gap-1.5 px-4 py-4 sm:px-6">
+              {NAV_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <a href={item.href} onClick={() => setOpen(false)} className={linkClassName(item, true)} aria-current={activeSection === item.href.slice(1) ? 'page' : undefined}>
+                    {item.label}<span aria-hidden="true" className="ml-1 opacity-70">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

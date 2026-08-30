@@ -1,209 +1,250 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { API_URL } from '../lib/api'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { portfolioData } from '../lib/portfolioData'
 
 export default function Projects() {
-  const [projects, setProjects] = useState([])
-  const [status, setStatus] = useState('loading') // 'loading' | 'success' | 'error'
+  const [activeCategory, setActiveCategory] = useState('All')
+  const { projects } = portfolioData
 
-  useEffect(() => {
-    if (!API_URL) {
-      setStatus('error')
-      return
-    }
+  // Dynamically extract categories
+  const categories = ['All', ...new Set(projects.map((p) => p.category))]
 
-    fetch(`${API_URL}/portfolio`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProjects(data.projects || [])
-        setStatus('success')
-      })
-      .catch((err) => {
-        console.error('API error:', err)
-        setStatus('error')
-      })
-  }, [])
+  const filteredProjects = activeCategory === 'All'
+    ? projects
+    : projects.filter((p) => p.category === activeCategory)
+
+  // Gradients list to give fallback cards a beautiful premium look
+  const gradients = [
+    'from-blue-600 to-cyan-500',
+    'from-purple-600 to-pink-500',
+    'from-emerald-500 to-teal-400',
+    'from-amber-500 to-orange-400',
+    'from-indigo-600 to-violet-500',
+    'from-rose-500 to-pink-600'
+  ]
 
   return (
     <section
       id="projects"
-      className="relative px-6 md:px-10 py-28 overflow-hidden"
+      className="relative px-6 md:px-10 py-28 overflow-hidden bg-white dark:bg-slate-950"
     >
       {/* BACKGROUND ACCENTS */}
-      <div className="absolute -right-40 top-20 w-[420px] h-[420px] bg-blue-500/10 rounded-full blur-3xl" />
-      <div className="absolute -left-40 bottom-0 w-[380px] h-[380px] bg-cyan-400/10 rounded-full blur-3xl" />
+      <div className="absolute -right-40 top-20 w-[450px] h-[450px] bg-blue-500/10 rounded-full blur-3xl dark:bg-blue-500/5 pointer-events-none" />
+      <div className="absolute -left-40 bottom-0 w-[400px] h-[400px] bg-cyan-400/10 rounded-full blur-3xl dark:bg-cyan-505/5 pointer-events-none" />
 
       <div className="relative max-w-6xl mx-auto">
         {/* HEADER */}
-        <div className="mb-14 text-center animate-fade-up">
-          <span className="inline-block mb-4 text-sm font-medium text-blue-500 tracking-widest uppercase">
+        <div className="mb-14 text-center">
+          <span className="inline-block mb-3 text-sm font-semibold text-blue-500 tracking-widest uppercase">
             Portfolio
           </span>
 
-          <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white">
+          <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             My Recent Works
           </h2>
 
-          <p className="mt-4 text-slate-600 dark:text-gray-400 max-w-xl mx-auto">
-            A selection of projects I&apos;ve worked on, ranging from web
-            applications to system platforms.
+          <div className="mt-2 w-16 h-1 bg-blue-500 mx-auto rounded-full mb-4" />
+
+          <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+            A selection of projects I&apos;ve worked on, ranging from full-stack web
+            applications to specialized front-end layouts.
           </p>
         </div>
 
-        {/* LOADING STATE */}
-        {status === 'loading' && (
-          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="
-                  rounded-2xl p-6
-                  bg-white/80 dark:bg-slate-800/80
-                  border border-slate-200 dark:border-white/10
-                  animate-pulse
-                "
+        {/* CATEGORY FILTER BUTTONS */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
+          {categories.map((category) => {
+            const isActive = activeCategory === category
+            return (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`
+                  relative px-4 py-2 rounded-full text-xs font-bold tracking-wide uppercase
+                  transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+                  ${isActive 
+                    ? 'text-white' 
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800'
+                  }
+                `}
               >
-                <div className="h-40 rounded-xl mb-5 bg-slate-200 dark:bg-slate-700" />
-                <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-700 mb-3" />
-                <div className="h-3 w-1/3 rounded bg-slate-200 dark:bg-slate-700" />
-              </div>
-            ))}
-          </div>
-        )}
+                {/* Active Indicator Slide Background */}
+                {isActive && (
+                  <motion.span
+                    layoutId="activeCategoryBg"
+                    className="absolute inset-0 bg-blue-600 rounded-full"
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    style={{ zIndex: 0 }}
+                  />
+                )}
+                <span className="relative z-10">{category}</span>
+              </button>
+            )
+          })}
+        </div>
 
-        {/* ERROR / EMPTY STATE */}
-        {status === 'error' && (
-          <div className="text-center py-16 animate-fade-up">
-            <p className="text-slate-500 dark:text-gray-500">
-              Projects are temporarily unavailable. Please check back later.
-            </p>
-          </div>
-        )}
-
-        {status === 'success' && projects.length === 0 && (
-          <div className="text-center py-16 animate-fade-up">
-            <p className="text-slate-500 dark:text-gray-500">
-              No projects to show yet — stay tuned!
-            </p>
-          </div>
-        )}
-
-        {/* GRID */}
-        {status === 'success' && projects.length > 0 && (
-          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            {projects.map((p, i) => (
-              <div
-                key={p.id ?? i}
-                className="
-                  group relative
-                  bg-white/80 dark:bg-slate-800/80
-                  backdrop-blur
-                  rounded-2xl p-6
-                  border border-slate-200 dark:border-white/10
-                  shadow-lg shadow-black/5 dark:shadow-black/30
-                  hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/10
-                  hover:border-blue-500/30
-                  transition-all duration-300
-                  animate-fade-up
-                "
-                style={{
-                  animationDelay: `${i * 0.1}s`,
-                  opacity: 1,
-                }}
-              >
-                {/* GLOW ON HOVER */}
-                <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-cyan-400/0 group-hover:from-blue-500/5 group-hover:to-cyan-400/5 transition-all duration-300 pointer-events-none" />
-
-                {/* IMAGE */}
-                <div
+        {/* PROJECTS GRID WITH MORPHING ANIMATIONS */}
+        <motion.div 
+          layout 
+          className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+        >
+          <AnimatePresence mode="popLayout">
+            {filteredProjects.map((p, i) => {
+              // Select deterministic gradient based on index
+              const gradient = gradients[i % gradients.length]
+              
+              return (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  whileHover={{ y: -8 }}
+                  transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                  key={p.id}
                   className="
-                    relative h-40 rounded-xl mb-5
-                    bg-gradient-to-br from-slate-200 to-slate-300
-                    dark:from-slate-700 dark:to-slate-800
-                    flex items-center justify-center
+                    group relative flex flex-col justify-between
+                    bg-white/80 dark:bg-slate-900/60
+                    backdrop-blur-md
+                    rounded-2xl p-6
+                    border border-slate-200 dark:border-white/10
+                    shadow-md shadow-slate-200/50 dark:shadow-black/40
+                    hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-black/70
+                    hover:border-blue-500/20 dark:hover:border-blue-400/20
+                    transition-all duration-300
                     overflow-hidden
                   "
                 >
-                  {p.image ? (
-                    <img
-                      src={p.image}
-                      alt={p.title}
+                  <div>
+                    {/* CARD LIGHT GLOW */}
+                    <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-blue-500/0 via-blue-500/0 to-cyan-400/0 group-hover:from-blue-500/5 group-hover:to-cyan-400/5 transition-all duration-300 pointer-events-none" />
+
+                    {/* DYNAMIC CARD IMAGE HEADER (Gradient fallback or actual image) */}
+                    <div
                       className="
-                        w-full h-full object-cover
-                        group-hover:scale-110
-                        transition-transform duration-500 ease-out
+                        relative h-40 rounded-xl mb-5
+                        overflow-hidden flex items-center justify-center
                       "
-                    />
-                  ) : (
-                    <svg
-                      className="w-10 h-10 text-slate-400 dark:text-gray-500 group-hover:scale-110 transition-transform duration-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 16.5V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v9.75m-18 0A2.25 2.25 0 005.25 19.5h13.5A2.25 2.25 0 0021 17.25m-18 0L21 17.25"
-                      />
-                    </svg>
-                  )}
+                      {p.image ? (
+                        <img
+                          src={p.image}
+                          alt={p.title}
+                          className="
+                            w-full h-full object-cover
+                            group-hover:scale-105
+                            transition-transform duration-500 ease-out
+                          "
+                        />
+                      ) : (
+                        <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center opacity-85 group-hover:scale-105 transition-transform duration-500 ease-out`}>
+                          {/* Decorative pattern lines overlay */}
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] bg-[size:16px_16px]" />
+                          <svg
+                            className="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M17.25 6.75L22.5 12l-5.25 5.25M6.75 17.25L1.5 12l5.25-5.25M14.25 4.5l-4.5 15"
+                            />
+                          </svg>
+                        </div>
+                      )}
 
-                  {/* SHINE SWEEP ON HOVER */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                </div>
-
-                {/* TITLE */}
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  {p.title}
-                </h3>
-
-                {/* TECH STACK */}
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {p.tech_stack
-                    ?.split(',')
-                    .map((tech, idx) => (
-                      <span
-                        key={idx}
-                        className="
-                          text-xs
-                          px-3 py-1 rounded-full
-                          bg-blue-500/10 text-blue-600
-                          dark:text-blue-400
-                          ring-1 ring-blue-500/10
-                          group-hover:ring-blue-500/30
-                          transition-all
-                        "
-                      >
-                        {tech.trim()}
+                      {/* Shine Sweep On Hover */}
+                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                      
+                      {/* Floating Category Badge */}
+                      <span className="absolute top-3 left-3 text-[10px] font-extrabold uppercase tracking-widest bg-slate-900/80 text-white px-2.5 py-1 rounded-md backdrop-blur-sm">
+                        {p.category}
                       </span>
-                    ))}
-                </div>
+                    </div>
 
-                {/* LINK */}
-                {p.url && (
-                  <a
-                    href={p.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="
-                      inline-flex items-center gap-1.5
-                      mt-5 text-sm font-medium
-                      text-blue-600 dark:text-blue-400
-                    "
-                  >
-                    View project
-                    <span className="transition-transform duration-300 group-hover:translate-x-1">
-                      →
-                    </span>
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                    {/* TITLE */}
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {p.title}
+                    </h3>
+
+                    {/* DESCRIPTION */}
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
+                      {p.description}
+                    </p>
+                  </div>
+
+                  <div>
+                    {/* TECH STACK TAGS */}
+                    <div className="flex flex-wrap gap-1.5 mt-4">
+                      {p.tech_stack.split(',').map((tech, idx) => (
+                        <span
+                          key={idx}
+                          className="
+                            text-[10px] font-bold uppercase tracking-wider
+                            px-2.5 py-1 rounded-md
+                            bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400
+                            ring-1 ring-slate-200/50 dark:ring-white/5
+                            group-hover:ring-blue-500/10 dark:group-hover:ring-blue-400/10
+                            transition-all
+                          "
+                        >
+                          {tech.trim()}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* LINK FOOTER */}
+                    <div className="flex items-center gap-4 mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
+                      {p.demo_url && (
+                        <a
+                          href={p.demo_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="
+                            inline-flex items-center gap-1.5
+                            text-sm font-semibold
+                            text-blue-600 dark:text-blue-400
+                            hover:text-blue-700 dark:hover:text-blue-300
+                            transition-colors
+                          "
+                        >
+                          Live Demo
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      )}
+                      {p.code_url && (
+                        <a
+                          href={p.code_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="
+                            inline-flex items-center gap-1.5
+                            text-sm font-semibold
+                            text-slate-600 dark:text-slate-400
+                            hover:text-slate-900 dark:hover:text-white
+                            transition-colors
+                          "
+                        >
+                          Source Code
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </section>
   )

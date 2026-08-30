@@ -1,122 +1,208 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { API_URL } from '../lib/api'
+import { motion } from 'framer-motion'
+import { portfolioData } from '../lib/portfolioData'
 
 export default function About() {
-  const [about, setAbout] = useState(null)
-  const [status, setStatus] = useState('loading') // 'loading' | 'success' | 'error'
+  const { description, skills, milestones } = portfolioData.about
 
-  useEffect(() => {
-    if (!API_URL) {
-      setStatus('error')
-      return
-    }
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 },
+    },
+  }
 
-    fetch(`${API_URL}/portfolio`)
-      .then((res) => res.json())
-      .then((data) => {
-        setAbout(data.about)
-        setStatus('success')
-      })
-      .catch((err) => {
-        console.error('API error:', err)
-        setStatus('error')
-      })
-  }, [])
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 15 },
+    },
+  }
+
+  const timelineVariants = {
+    hidden: { opacity: 0, x: 30 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { type: 'spring', stiffness: 80, damping: 15 },
+    },
+  }
 
   return (
     <section
       id="about"
-      className="relative px-6 md:px-10 py-28 overflow-hidden"
+      className="relative px-6 md:px-10 py-28 overflow-hidden bg-slate-50/50 dark:bg-slate-900/20"
     >
-      <div className="absolute -left-40 top-20 w-[420px] h-[420px] bg-blue-500/10 rounded-full blur-3xl" />
-      <div className="absolute -right-40 bottom-0 w-[380px] h-[380px] bg-cyan-400/10 rounded-full blur-3xl" />
+      {/* Background blobs */}
+      <div className="absolute -left-40 top-20 w-[450px] h-[450px] bg-blue-500/10 rounded-full blur-3xl dark:bg-blue-500/5 pointer-events-none" />
+      <div className="absolute -right-40 bottom-0 w-[400px] h-[400px] bg-cyan-400/10 rounded-full blur-3xl dark:bg-cyan-500/5 pointer-events-none" />
 
-      <div className="relative max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-20 items-center">
-        {/* LEFT: TEXT */}
-        <div className="animate-fade-up">
-          <span className="inline-block mb-4 text-sm font-medium text-blue-500 tracking-widest uppercase">
+      <div className="relative max-w-6xl mx-auto">
+        {/* HEADER */}
+        <div className="mb-16 text-center">
+          <span className="inline-block mb-3 text-sm font-semibold text-blue-500 tracking-widest uppercase">
             About Me
           </span>
-
-          <h2 className="text-4xl font-extrabold mb-6 text-slate-900 dark:text-white">
-            Who I Am
+          <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Who I Am & What I Do
           </h2>
-
-          {status === 'loading' && (
-            <div className="space-y-3 max-w-xl animate-pulse">
-              <div className="h-4 rounded bg-slate-200 dark:bg-slate-700 w-full" />
-              <div className="h-4 rounded bg-slate-200 dark:bg-slate-700 w-5/6" />
-              <div className="h-4 rounded bg-slate-200 dark:bg-slate-700 w-4/6" />
-            </div>
-          )}
-
-          {status === 'error' && (
-            <p className="text-slate-500 dark:text-gray-500 italic max-w-xl">
-              I&apos;m a web developer passionate about building modern,
-              scalable, and maintainable applications. (Content is
-              temporarily unavailable.)
-            </p>
-          )}
-
-          {status === 'success' && about && (
-            <p className="text-slate-600 dark:text-gray-400 leading-relaxed max-w-xl">
-              {about.description}
-            </p>
-          )}
-
-          {/* SKILL TAGS */}
-          <div className="mt-8 flex flex-wrap gap-2.5">
-            {['Laravel', 'Next.js', 'Vue.js', 'Tailwind CSS', 'MySQL'].map((skill) => (
-              <span
-                key={skill}
-                className="
-                  px-3.5 py-1.5 rounded-full text-xs font-medium
-                  bg-blue-500/10 text-blue-600 dark:text-blue-400
-                  ring-1 ring-blue-500/20
-                "
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
+          <div className="mt-2 w-16 h-1 bg-blue-500 mx-auto rounded-full" />
         </div>
 
-        {/* RIGHT: ILLUSTRATION */}
-        <div className="flex justify-center animate-fade-up animation-delay-200">
-          <div
-            className="
-              relative
-              w-64 h-64 md:w-80 md:h-80
-              rounded-3xl
-              bg-white/80 dark:bg-slate-800/80
-              backdrop-blur
-              flex items-center justify-center
-              shadow-xl shadow-black/10 dark:shadow-black/30
-              ring-1 ring-black/5 dark:ring-white/10
-            "
+        <div className="grid md:grid-cols-12 gap-16 items-start">
+          {/* LEFT: BIO & CATEGORIZED SKILLS (7 Columns) */}
+          <motion.div 
+            className="md:col-span-7 space-y-10"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6 }}
           >
-            <svg
-              className="w-20 h-20 md:w-24 md:h-24 text-blue-500/40"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-              />
-            </svg>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                My Story
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-base md:text-lg">
+                {description}
+              </p>
+            </div>
 
-            <div className="absolute -top-4 -left-4 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 text-xs font-medium text-slate-700 dark:text-gray-300">
-              3+ yrs
+            {/* CATEGORIZED SKILLS */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                Technical Expertise
+              </h3>
+              
+              <div className="grid gap-6 sm:grid-cols-3">
+                {/* Frontend Category */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest">
+                    Frontend
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.frontend.map((skill) => (
+                      <span
+                        key={skill}
+                        className="
+                          px-3 py-1.5 rounded-lg text-xs font-semibold
+                          bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300
+                          shadow-sm ring-1 ring-slate-200 dark:ring-white/10
+                          hover:ring-blue-500 dark:hover:ring-blue-400 hover:text-blue-500 dark:hover:text-blue-400
+                          transition-all duration-300
+                        "
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Backend Category */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest">
+                    Backend
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.backend.map((skill) => (
+                      <span
+                        key={skill}
+                        className="
+                          px-3 py-1.5 rounded-lg text-xs font-semibold
+                          bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300
+                          shadow-sm ring-1 ring-slate-200 dark:ring-white/10
+                          hover:ring-blue-500 dark:hover:ring-blue-400 hover:text-blue-500 dark:hover:text-blue-400
+                          transition-all duration-300
+                        "
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tools Category */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest">
+                    Database & Tools
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {skills.tools.map((skill) => (
+                      <span
+                        key={skill}
+                        className="
+                          px-3 py-1.5 rounded-lg text-xs font-semibold
+                          bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300
+                          shadow-sm ring-1 ring-slate-200 dark:ring-white/10
+                          hover:ring-blue-500 dark:hover:ring-blue-400 hover:text-blue-500 dark:hover:text-blue-400
+                          transition-all duration-300
+                        "
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="absolute -bottom-4 -right-4 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 text-xs font-medium text-slate-700 dark:text-gray-300">
-              S.Kom
-            </div>
+          </motion.div>
+
+          {/* RIGHT: PROFESSIONAL EXPERIENCE TIMELINE (5 Columns) */}
+          <div className="md:col-span-5 space-y-6">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white px-2">
+              My Journey
+            </h3>
+
+            <motion.div 
+              className="relative border-l-2 border-slate-200 dark:border-white/10 ml-4 space-y-8 py-2"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: '-50px' }}
+            >
+              {milestones.map((item, idx) => (
+                <motion.div 
+                  key={idx} 
+                  variants={timelineVariants}
+                  className="relative pl-7 group"
+                >
+                  {/* Timeline dot */}
+                  <div className="
+                    absolute -left-[9px] top-1.5
+                    size-4 rounded-full
+                    bg-slate-100 dark:bg-slate-950
+                    border-2 border-slate-300 dark:border-slate-800
+                    group-hover:border-blue-500 dark:group-hover:border-blue-400
+                    group-hover:bg-blue-500 dark:group-hover:bg-blue-400
+                    transition-all duration-300
+                  " />
+
+                  {/* Year Tag */}
+                  <span className="
+                    inline-block text-[11px] font-bold tracking-wider uppercase
+                    px-2.5 py-1 rounded bg-blue-500/10 text-blue-600 dark:bg-blue-400/5 dark:text-blue-400
+                    mb-2
+                  ">
+                    {item.year}
+                  </span>
+
+                  <h4 className="text-lg font-bold text-slate-950 dark:text-white">
+                    {item.role}
+                  </h4>
+
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                    {item.company}
+                  </p>
+
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
         </div>
       </div>
